@@ -252,12 +252,6 @@ namespace LAB3
             }
         }
 
-        // Заливка с затравкой (итеративная)
-
-        private void ZalivIter(int x1, int y1)
-        {
-
-        }
         private void Form1_Load(object sender, EventArgs e)
         {
             _graphics = Graphics.FromHwnd(pictureBox1.Handle);
