@@ -135,8 +135,10 @@ namespace LAB3
         {
             button1.Enabled = false;
             button2.Enabled = false;
-            mybitmap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
-            using (_graphics = Graphics.FromHwnd(pictureBox1.Handle))
+            //todo удалил, даже хз зачем это тут, но без него работает нормально
+            //mybitmap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+            pictureBox1.Image = mybitmap;
+            using (_graphics = Graphics.FromImage(mybitmap))
             {
                 if (radioButton1.Checked == true)
                 {
@@ -165,58 +167,42 @@ namespace LAB3
                 }
                 else if (radioButton5.Checked == true)
                 {
-                    mybitmap = pictureBox1.Image as Bitmap;
+                    //todo и тут тоже
+                    //mybitmap = pictureBox1.Image as Bitmap;
                     Stack<Point> points = new Stack<Point>(64);
                     points.Push(new Point(xr, yr));
+                    //todo изменён алгоритм
                     while (points.Count() != 0)
-                    {
+                    {                       
                         Point currentPoint = points.Pop();
-                        mybitmap.SetPixel(currentPoint.X, currentPoint.Y,
-                            current_color_fill);
-                        if (currentPoint.X >= 0
-                            && ++currentPoint.X < MAX_GOR
-                            && currentPoint.Y >= 0
-                            && currentPoint.Y < MAX_VER
-                            && mybitmap.GetPixel(currentPoint.X, currentPoint.Y)
-                            != current_color_fill
-                            && mybitmap.GetPixel(currentPoint.X, currentPoint.Y)
-                            != current_color_line)
+                        if (currentPoint.X < 0
+                            || currentPoint.Y < 0
+                            || currentPoint.X >= MAX_GOR
+                            || currentPoint.Y >= MAX_VER)
+                            continue;
+
+                        Color oldColor = mybitmap.GetPixel(currentPoint.X, currentPoint.Y);
+
+                        if (oldColor.ToArgb() != current_color_fill.ToArgb()
+                            && oldColor.ToArgb() != current_color_line.ToArgb())
                         {
+                            mybitmap.SetPixel(currentPoint.X, currentPoint.Y, current_color_fill);
+                            currentPoint.X++;
+                            points.Push(currentPoint);
+
+                            currentPoint.X--;
+                            currentPoint.Y++;
+                            points.Push(currentPoint);
+
+                            currentPoint.X--;
+                            currentPoint.Y--;
+                            points.Push(currentPoint);
+
+                            currentPoint.X++;
+                            currentPoint.Y--;
                             points.Push(currentPoint);
                         }
-                        if (--currentPoint.X < MAX_GOR
-                            && currentPoint.X >= 0
-                            && ++currentPoint.Y < MAX_VER
-                            && currentPoint.Y >= 0
-                            && mybitmap.GetPixel(currentPoint.X, currentPoint.Y)
-                            != current_color_fill
-                            && mybitmap.GetPixel(currentPoint.X, currentPoint.Y)
-                            != current_color_line)
-                        {
-                            points.Push(currentPoint);
-                        }
-                        if (--currentPoint.X < MAX_GOR
-                            && currentPoint.X >= 0
-                            && --currentPoint.Y < MAX_VER
-                            && currentPoint.Y >= 0
-                            && mybitmap.GetPixel(currentPoint.X, currentPoint.Y)
-                            != current_color_fill
-                            && mybitmap.GetPixel(currentPoint.X, currentPoint.Y)
-                            != current_color_line)
-                        {
-                            points.Push(currentPoint);
-                        }
-                        if (currentPoint.X >= 0
-                            && ++currentPoint.X < MAX_GOR
-                            && --currentPoint.Y < MAX_VER
-                            && currentPoint.Y >= 0
-                            && mybitmap.GetPixel(currentPoint.X, currentPoint.Y)
-                            != current_color_fill
-                            && mybitmap.GetPixel(currentPoint.X, currentPoint.Y)
-                            != current_color_line)
-                        {
-                            points.Push(currentPoint);
-                        }
+                        /*Thread.Sleep(100);*/
                     }
                 }
                 //передаем полученный растр mybitmap в элемент pictureBox
@@ -251,10 +237,11 @@ namespace LAB3
                 return;
             }
         }
-
         private void Form1_Load(object sender, EventArgs e)
         {
-            _graphics = Graphics.FromHwnd(pictureBox1.Handle);
+            //todo в graphics вместо FromHwnd(pictureBox) беру FromImage(mybitmap), заранее инициализоровав битмап
+            mybitmap = new Bitmap(pictureBox1.Width, pictureBox1.Height);
+            _graphics = Graphics.FromImage(mybitmap);
         }
     }
 }
